@@ -81,7 +81,7 @@ class _ListaWidgetState extends State<ListaWidget>{
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => VistaDetalle()
+              builder: (context) => VistaRequest(ejemploArgs: "HOLA A TODOS")
           ),
         );
       },
@@ -99,6 +99,72 @@ class VistaDetalle extends StatelessWidget {
       ),
       body: const Center(
         child: Text("INFO ESPECÍFICA DE DETALLE")
+      ),
+    );
+  }
+}
+
+class VistaRequest extends StatefulWidget {
+
+  final String ejemploArgs;
+
+  VistaRequest({required this.ejemploArgs});
+
+  @override
+  _VistaRequestState createState() => _VistaRequestState(estadoArgs: ejemploArgs);
+}
+
+class _VistaRequestState extends State<VistaRequest> {
+
+  final String estadoArgs;
+  // vamos a declarar una variable donde contener el future
+  late Future<List<Carro>> carros;
+
+  _VistaRequestState({required this.estadoArgs});
+
+  // para poder acceder a un future hay que correr la función desde el init
+  @override
+  void initState() {
+
+    super.initState();
+    carros = obtenerInfo();
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("AQUI HACEMOS REQUEST")),
+      body: Center(
+        child: FutureBuilder<List<Carro>>(
+          future: carros,
+          builder: (context, snapshot) {
+
+            if(snapshot.hasData){
+
+              // significa que ya hay información resultado del future
+              // Column es un widget en donde puedes acumular varios widgets
+              // contenedor
+              return Column(
+                children: [
+                  Text(snapshot.data![0].marca),
+                  Text(snapshot.data![0].modelo),
+                  Text("${snapshot.data![0].anio}"),
+                  Text(estadoArgs),
+                  Image.network("https://www.foodchallenges.com/wp-content/uploads/2018/08/beast-pizza2-184x184.jpeg"),
+                ],
+              );
+            } else if(snapshot.hasError) {
+
+              // significa que al momento de obtener el future hubo un error
+              return Text("ERROR AL OBTENER INFORMACION EN FUTURE BUILDER");
+            }
+
+            // SI no hay datos y NO hay error
+            // despliega indicador de actividad
+            return CircularProgressIndicator();
+          },
+        )
       ),
     );
   }
